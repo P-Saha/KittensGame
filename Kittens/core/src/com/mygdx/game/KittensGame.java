@@ -2,7 +2,9 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -11,7 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.io.*;
 import java.util.*;
 
-public class KittensGame extends ApplicationAdapter {
+public class KittensGame extends ApplicationAdapter implements InputProcessor{
 	SpriteBatch batch;
 	Music bgMusic;
 	public static final int LEFT=0;
@@ -19,12 +21,15 @@ public class KittensGame extends ApplicationAdapter {
 	public static final int UP=2;
 	public static final int DOWN=3;
 	private static String mode="side";
+	int jumpAt=15;
 	private Kitten kat;
 	Pixmap forestMap;
 	int forestWall;
 	Texture forestBG;
+	boolean jumped=false;
+	boolean wUp=false;
 	public void modeShift(){
-		if(Gdx.input.isKeyPressed(Keys.SPACE)){
+		if(Gdx.input.isKeyJustPressed(Keys.SPACE)){
 			mode=mode.equals("map")?"side":"map";
 		}
 	}
@@ -41,24 +46,28 @@ public class KittensGame extends ApplicationAdapter {
 	}
 	class Kitten{
 		private int mapx,mapy,sidex,sidey,health,mapCurAction,sideCurAction;
+		int vy;
 		private boolean alive,attacking;
-		private Texture [][] mapframes= new Texture[1][7];
+		private Texture [][] mapFrames= new Texture[4][7];
 		//Left,Right,Up,Down
 		//Animation frames
-		private Texture [][] sideframes= new Texture[2][7];
+		private Texture [][] sideFrames= new Texture[2][7]; 
 		//Left,Right,AtkLeft,AtkRight,ult
 		//Animation frames
+		private Texture [][] sideIdleFrames=new Texture[2][7];
 		private int curFrame,curAtkFrame;
 		double count;	
 		
-		public Kitten(int xx,int yy,Texture[][]mapframelist,Texture[][]sideframelist){
+		public Kitten(int xx,int yy,Texture[][]mapframelist,Texture[][]sideframelist,Texture[][]sideidleframelist){
 			mapx=xx;
 			mapy=yy;
 			sidex=xx;
 			sidey=yy;
+			vy=0;
 			health=10;
-			mapframes=mapframelist;
-			sideframes=sideframelist;
+			mapFrames=mapframelist;
+			sideFrames=sideframelist;
+			sideIdleFrames=sideidleframelist;
 			alive = true;
 			curFrame=0;
 			curAtkFrame=0;
@@ -69,27 +78,27 @@ public class KittensGame extends ApplicationAdapter {
 		}
 		public void idleDraw(){
 			if (mode.equals("map")){
-				batch.draw(mapframes[mapCurAction][curFrame],mapx,mapy);
+				batch.draw(mapFrames[mapCurAction][curFrame],mapx,mapy);
 			}
 			if (mode.equals("side")){
-				batch.draw(sideframes[sideCurAction][0],sidex,sidey);
+				batch.draw(sideIdleFrames[sideCurAction][curFrame],sidex,sidey);
 			}
 		}
 		public void draw(){
 			if (mode.equals("map")){
-				batch.draw(mapframes[mapCurAction][curFrame],mapx,mapy);
+				batch.draw(mapFrames[mapCurAction][curFrame],mapx,mapy);
 			}
-			System.out.println(curFrame);
-			System.out.println(mapCurAction);
+			//System.out.println(curFrame);
+			//System.out.println(mapCurAction);
 			if (mode.equals("side")){
-				batch.draw(sideframes[sideCurAction][curFrame],sidex,sidey);
+				batch.draw(sideFrames[sideCurAction][curFrame],sidex,sidey);
 			}		
 		}
 		public void attackAndDraw(){
 			if(Gdx.input.isKeyPressed(Keys.X) || attacking){
 				if (mode.equals("side")){
 					attacking=true;
-					batch.draw(sideframes[sideCurAction+2][curAtkFrame],mapx,mapy);
+					batch.draw(sideFrames[sideCurAction+2][curAtkFrame],mapx,mapy);
 					curAtkFrame++;
 					if (curAtkFrame>2 /*and collides with enemy*/){////////////////////////////////////////
 						//deal damage//////////////////////////////////////////////////
@@ -104,11 +113,6 @@ public class KittensGame extends ApplicationAdapter {
 		public void moveAndDraw(){
 			boolean drawn=false;
 			if (alive && !attacking){
-				if (mode.equals("side")){
-					if(sidey>170){
-						sidey-=10;
-					}
-				}
 				if(Gdx.input.isKeyPressed(Keys.A)||Gdx.input.isKeyPressed(Keys.LEFT)){
 					if (mode.equals("map")){
 						if(mapx>0){
@@ -119,7 +123,7 @@ public class KittensGame extends ApplicationAdapter {
 					}
 					if (mode.equals("side")){
 						if ((sidex-10)>=0){
-							sidex-=5;
+							sidex-=10;
 						}
 						sideCurAction=LEFT;
 						drawn=true;
@@ -135,7 +139,7 @@ public class KittensGame extends ApplicationAdapter {
 					}
 					if (mode.equals("side")){
 						if ((sidex+130)<=1456){
-							sidex+=5;
+							sidex+=10;
 						}
 						sideCurAction=RIGHT;
 						drawn=true;
@@ -149,19 +153,30 @@ public class KittensGame extends ApplicationAdapter {
 						mapCurAction=UP;
 						drawn=true;
 					}
-				}
-				//if(Gdx.input.isKeyJustPressed(Keys.W)||Gdx.input.isKeyJustPressed(Keys.UP)){
-				if(Gdx.input.isKeyPressed(Keys.W)||Gdx.input.isKeyPressed(Keys.UP)){
 					if (mode.equals("side")){
-						if ((sidey+150)<=900){
-							sidey+=20;
+						if(sidey<=190){
+							vy=20;
+							jumpAt=sidey;
+							drawn=true;
 						}
-						drawn=true;
+					}
+					
+				}
+				if (mode.equals("side")){
+					vy-=1;
+					if(170<sidey+vy){
+						sidey+=vy;
+					}
+					else{
+						sidey=170;
+						vy=0;
 					}
 				}
-				else if(Gdx.input.isKeyPressed(Keys.S)||Gdx.input.isKeyPressed(Keys.DOWN)){
+				//System.out.println(vy);
+				//System.out.println(sidey);
+				if(Gdx.input.isKeyPressed(Keys.S)||Gdx.input.isKeyPressed(Keys.DOWN)){
 					if (mode.equals("map")){
-						if(mapy<0){
+						if(mapy<1000){
 							mapy-=10;
 						}
 						mapCurAction=DOWN;
@@ -191,22 +206,33 @@ public class KittensGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+		Gdx.input.setInputProcessor(this);
 		forestWall = cNum(0,0,255,255);
-		Texture[][]mapFrames=new Texture[1][7];
+		Texture[][]mapFrames=new Texture[4][7];
 		Texture[][]sideFrames=new Texture[2][7];
+		Texture[][]sideIdleFrames=new Texture[2][7];
 		/*for(int i=0;i<4;i++){
-			for(int j=0;j<4;j++){
-				mapFrames[i][j]=new Texture("mapFrames"+(i+1)+"-"+(j+1)+".png");
+			for(int j=0;j<7;j++){
+				mapFrames[i][j]=new Texture("mapFrames"+(i+2)+"-"+(j+1)+".png");
 			}
 		}
 		for(int i=0;i<5;i++){
-			for(int j=0;j<4;j++){
-				sideFrames[i][j]=new Texture("sideFrames"+(i+1)+"-"+(j+1)+".png");
-			}
-		}*/
-		for(int i=0;i<1;i++){
 			for(int j=0;j<7;j++){
-				mapFrames[i][j]=new Texture("sideFrames"+(i+1)+"-"+(j+1)+".png");
+				sideFrames[i][j]=new Texture("sideFrames"+(i+2)+"-"+(j+1)+".png");
+			}
+		}
+		for(int i=0;i<14;i++){
+			sideIdleFrames[i/7+1][i%7+1]=new Texture("sideFrames1-"+(i)+".png");
+		} 
+		*/ 
+		for(int i=0;i<2;i++){
+			for(int j=0;j<7;j++){
+				sideIdleFrames[i][j]=new Texture("sideFrames"+(i+1)+"-"+(j+1)+".png");
+			}
+		} 
+		for(int i=0;i<4;i++){
+			for(int j=0;j<7;j++){
+				mapFrames[i][j]=new Texture("sideFrames"+(i%2+1)+"-"+(j+1)+".png");
 			}
 		}
 		for(int i=0;i<2;i++){
@@ -215,7 +241,7 @@ public class KittensGame extends ApplicationAdapter {
 			}
 		}
 		forestBG = new Texture("Forest1.png");
-		kat= new Kitten(10,170,mapFrames,sideFrames);
+		kat= new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
 	}
 
 	@Override
@@ -223,10 +249,50 @@ public class KittensGame extends ApplicationAdapter {
 		//Always stuff and then drawing
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		modeShift();
 		batch.begin();
 		drawBack();
 		kat.moveAndDraw();
 		kat.attackAndDraw();
 		batch.end();
+	}
+	@Override
+	public boolean keyDown(int keycode) {
+		return false;
+	}
+	@Override
+	public boolean keyUp(int keycode) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean keyTyped(char character) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean scrolled(int amount) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
