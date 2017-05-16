@@ -13,7 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.io.*;
 import java.util.*;
 
-public class KittensGame extends ApplicationAdapter implements InputProcessor{
+public class KittensGame extends ApplicationAdapter{
 	SpriteBatch batch;
 	Music bgMusic;
 	public static final int LEFT=0;
@@ -51,10 +51,11 @@ public class KittensGame extends ApplicationAdapter implements InputProcessor{
 		private Texture [][] mapFrames= new Texture[4][7];
 		//Left,Right,Up,Down
 		//Animation frames
-		private Texture [][] sideFrames= new Texture[2][7]; 
-		//Left,Right,AtkLeft,AtkRight,ult
+		private Texture [][] sideFrames= new Texture[7][7]; 
+		//RunLeft,RunRight,AtkLeft,AtkRight,JumpLeft,JumpRight,ult, I HATE JUMPING
 		//Animation frames
 		private Texture [][] sideIdleFrames=new Texture[2][7];
+		//Left,Right
 		private int curFrame,curAtkFrame;
 		double count;	
 		
@@ -157,7 +158,6 @@ public class KittensGame extends ApplicationAdapter implements InputProcessor{
 						if(sidey<=190){
 							vy=20;
 							jumpAt=sidey;
-							drawn=true;
 						}
 					}
 					
@@ -206,10 +206,9 @@ public class KittensGame extends ApplicationAdapter implements InputProcessor{
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		Gdx.input.setInputProcessor(this);
 		forestWall = cNum(0,0,255,255);
 		Texture[][]mapFrames=new Texture[4][7];
-		Texture[][]sideFrames=new Texture[2][7];
+		Texture[][]sideFrames=new Texture[7][7];
 		Texture[][]sideIdleFrames=new Texture[2][7];
 		/*for(int i=0;i<4;i++){
 			for(int j=0;j<7;j++){
@@ -222,10 +221,23 @@ public class KittensGame extends ApplicationAdapter implements InputProcessor{
 			}
 		}
 		for(int i=0;i<14;i++){
-			sideIdleFrames[i/7+1][i%7+1]=new Texture("sideFrames1-"+(i)+".png");
+			sideIdleFrames[i/7][i%7+1]=new Texture("sideFrames1-"+(i+1)+".png");
 		} 
 		*/ 
+		for(int i=0;i<14;i++){
+			sideIdleFrames[i/7][i%7]=new Texture("sideFrames1-"+(i+1)+".png");
+		}
 		for(int i=0;i<2;i++){
+			for(int j=0;j<7;j++){
+				sideFrames[i][j]=new Texture("sideFrames"+(i+2)+"-"+(j+1)+".png");
+			}
+		}
+		for(int i=0;i<4;i++){
+			for(int j=0;j<7;j++){
+				mapFrames[i][j]=new Texture("sideFrames"+(i%2+2)+"-"+(j+1)+".png");
+			}
+		}
+		/*for(int i=0;i<2;i++){
 			for(int j=0;j<7;j++){
 				sideIdleFrames[i][j]=new Texture("sideFrames"+(i+1)+"-"+(j+1)+".png");
 			}
@@ -239,7 +251,7 @@ public class KittensGame extends ApplicationAdapter implements InputProcessor{
 			for(int j=0;j<7;j++){
 				sideFrames[i][j]=new Texture("sideFrames"+(i+1)+"-"+(j+1)+".png");
 			}
-		}
+		}*/
 		forestBG = new Texture("Forest1.png");
 		kat= new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
 	}
@@ -255,44 +267,5 @@ public class KittensGame extends ApplicationAdapter implements InputProcessor{
 		kat.moveAndDraw();
 		kat.attackAndDraw();
 		batch.end();
-	}
-	@Override
-	public boolean keyDown(int keycode) {
-		return false;
-	}
-	@Override
-	public boolean keyUp(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean keyTyped(char character) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public boolean scrolled(int amount) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 }
