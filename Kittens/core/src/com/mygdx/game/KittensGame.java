@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,6 +21,7 @@ public class KittensGame extends ApplicationAdapter{
 	public static final int RIGHT=1;
 	public static final int UP=2;
 	public static final int DOWN=3;
+	OrthographicCamera camera;
 	private static String mode="side";
 	int jumpAt=15;
 	private Kitten kat;
@@ -195,6 +197,8 @@ public class KittensGame extends ApplicationAdapter{
 		}
 		public int getMapX(){return mapx;}
 		public int getMapY(){return mapy;}
+		public int getSideX(){return sidex;}
+		public int getSideY(){return sidey;}
 	}
 	public boolean checkClear(int x,int y){
 		if(x<0 || x>= forestMap.getWidth() || y<0 || y>= forestMap.getHeight()){
@@ -206,6 +210,7 @@ public class KittensGame extends ApplicationAdapter{
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		forestWall = cNum(0,0,255,255);
 		Texture[][]mapFrames=new Texture[4][7];
 		Texture[][]sideFrames=new Texture[7][7];
@@ -255,13 +260,23 @@ public class KittensGame extends ApplicationAdapter{
 		forestBG = new Texture("Forest1.png");
 		kat= new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
 	}
-
+	private void updateCamera(){
+		if (mode.equals("map")){
+			camera.position.set(kat.getMapX(),kat.getMapY(),0);
+		}
+		if (mode.equals("side")){
+			camera.position.set(kat.getSideX(),kat.getSideY()+170,0);
+		}
+		camera.update();
+		batch.setProjectionMatrix(camera.combined);
+	}
 	@Override
-	public void render () {
+	public void render() {
 		//Always stuff and then drawing
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		modeShift();
+		updateCamera();
 		batch.begin();
 		drawBack();
 		kat.moveAndDraw();
