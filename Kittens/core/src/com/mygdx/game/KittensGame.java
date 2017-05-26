@@ -200,6 +200,49 @@ public class KittensGame extends ApplicationAdapter{
 		public int getSideX(){return sidex;}
 		public int getSideY(){return sidey;}
 	}
+	class SideEnemy{
+		private int x,y,health,curFrame,curAction,speed;
+		private double count;
+		private Texture[][]frames;
+		private boolean alive,drawn;
+		private SideEnemy(int xx,int yy,Texture[][]framelist, int spd){
+			x=xx;
+			y=yy;
+			health=10;
+			frames=framelist;
+			curFrame=0;
+			curAction=RIGHT;
+			count = 0.0;
+			alive=true;
+			speed=spd;
+		}
+		public void moveAndDraw(){
+			if (alive && mode.equals("side")){
+				if(kat.getSideX()<x){
+					curAction=LEFT;
+				}
+				else{
+					curAction=RIGHT;
+				}
+				if(curAction==RIGHT){
+					x+=5;
+				}
+				if(curAction==LEFT){
+					x-=5;
+				}
+				count += .0625;
+				curFrame=(int)(count)%7;
+				draw();
+			}
+		}
+		public void draw(){
+			if (mode.equals("side")){
+				batch.draw(frames[curAction][curFrame],x,y);
+			}	
+		}
+		public int getX(){return x;}
+		public int getY(){return y;}
+	}
 	public boolean checkClear(int x,int y){
 		if(x<0 || x>= forestMap.getWidth() || y<0 || y>= forestMap.getHeight()){
 			return false;
