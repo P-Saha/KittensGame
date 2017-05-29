@@ -25,6 +25,7 @@ public class KittensGame extends ApplicationAdapter{
 	private static String mode="side";
 	int jumpAt=15;
 	private Kitten kat;
+	private SideEnemy enemy;
 	Pixmap forestMap;
 	int forestWall;
 	Texture forestBG;
@@ -49,7 +50,7 @@ public class KittensGame extends ApplicationAdapter{
 	class Kitten{
 		private int mapx,mapy,sidex,sidey,health,mapCurAction,sideCurAction;
 		int vy;
-		private boolean alive,attacking;
+		private boolean alive,attacking,drawn;
 		private Texture [][] mapFrames= new Texture[4][7];
 		//Left,Right,Up,Down
 		//Animation frames
@@ -78,6 +79,7 @@ public class KittensGame extends ApplicationAdapter{
 			sideCurAction=0;
 			count = 0.0;
 			attacking=false;
+			drawn=false;
 		}
 		public void idleDraw(){
 			if (mode.equals("map")){
@@ -88,14 +90,19 @@ public class KittensGame extends ApplicationAdapter{
 			}
 		}
 		public void draw(){
-			if (mode.equals("map")){
-				batch.draw(mapFrames[mapCurAction][curFrame],mapx,mapy);
+			if (drawn){
+				if (mode.equals("map")){
+					batch.draw(mapFrames[mapCurAction][curFrame],mapx,mapy);
+				}
+				//System.out.println(curFrame);
+				//System.out.println(mapCurAction);
+				if (mode.equals("side")){
+					batch.draw(sideFrames[sideCurAction][curFrame],sidex,sidey);
+				}
 			}
-			//System.out.println(curFrame);
-			//System.out.println(mapCurAction);
-			if (mode.equals("side")){
-				batch.draw(sideFrames[sideCurAction][curFrame],sidex,sidey);
-			}		
+			else{
+				idleDraw();
+			}
 		}
 		public void attackAndDraw(){
 			if(Gdx.input.isKeyPressed(Keys.X) || attacking){
@@ -113,8 +120,8 @@ public class KittensGame extends ApplicationAdapter{
 				}
 			}
 		}
-		public void moveAndDraw(){
-			boolean drawn=false;
+		public void move(){
+			drawn=false;
 			if (alive && !attacking){
 				if(Gdx.input.isKeyPressed(Keys.A)||Gdx.input.isKeyPressed(Keys.LEFT)){
 					if (mode.equals("map")){
@@ -185,12 +192,6 @@ public class KittensGame extends ApplicationAdapter{
 						drawn=true;
 					}
 				}
-				if (drawn){
-					draw();
-				}
-				else{
-					idleDraw();
-				}
 				count += .0625;
 				curFrame=(int)(count)%7;
 			}
@@ -204,7 +205,7 @@ public class KittensGame extends ApplicationAdapter{
 		private int x,y,health,curFrame,curAction,speed;
 		private double count;
 		private Texture[][]frames;
-		private boolean alive,drawn;
+		private boolean alive;
 		private SideEnemy(int xx,int yy,Texture[][]framelist, int spd){
 			x=xx;
 			y=yy;
@@ -216,7 +217,7 @@ public class KittensGame extends ApplicationAdapter{
 			alive=true;
 			speed=spd;
 		}
-		public void moveAndDraw(){
+		public void move(){
 			if (alive && mode.equals("side")){
 				if(kat.getSideX()<x){
 					curAction=LEFT;
@@ -225,14 +226,13 @@ public class KittensGame extends ApplicationAdapter{
 					curAction=RIGHT;
 				}
 				if(curAction==RIGHT){
-					x+=5;
+					x+=speed;
 				}
 				if(curAction==LEFT){
-					x-=5;
+					x-=speed;
 				}
 				count += .0625;
 				curFrame=(int)(count)%7;
-				draw();
 			}
 		}
 		public void draw(){
@@ -301,11 +301,12 @@ public class KittensGame extends ApplicationAdapter{
 			}
 		}*/
 		forestBG = new Texture("Forest1.png");
-		kat= new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
+		kat=new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
+		enemy=new SideEnemy(10,170,sideIdleFrames,5);
 	}
 	private void updateCamera(){
 		if (mode.equals("map")){
-			camera.position.set(kat.getMapX(),kat.getMapY(),0);
+			camera.position.set(kat.getMapX()+140/2,kat.getMapY()+120/2,0);
 		}
 		if (mode.equals("side")){
 			camera.position.set(kat.getSideX(),kat.getSideY()+170,0);
@@ -322,8 +323,11 @@ public class KittensGame extends ApplicationAdapter{
 		updateCamera();
 		batch.begin();
 		drawBack();
-		kat.moveAndDraw();
+		kat.move();
+		kat.draw();
 		kat.attackAndDraw();
+		enemy.move();
+		enemy.draw();
 		batch.end();
 	}
 }
