@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
+
 import java.io.*;
 import java.util.*;
 
@@ -48,8 +50,7 @@ public class KittensGame extends ApplicationAdapter{
 		return (r<<24) + (g<<16) + (b<<8) + a;
 	}
 	class Kitten{
-		private int mapx,mapy,sidex,sidey,health,mapCurAction,sideCurAction;
-		int vy;
+		private int mapx,mapy,sidex,sidey,vy,health,mapCurAction,sideCurAction;
 		private boolean alive,attacking,drawn;
 		private Texture [][] mapFrames= new Texture[4][7];
 		//Left,Right,Up,Down
@@ -60,7 +61,8 @@ public class KittensGame extends ApplicationAdapter{
 		private Texture [][] sideIdleFrames=new Texture[2][7];
 		//Left,Right
 		private int curFrame,curAtkFrame;
-		double count;	
+		private double count;
+		private Rectangle hitbox;
 		
 		public Kitten(int xx,int yy,Texture[][]mapframelist,Texture[][]sideframelist,Texture[][]sideidleframelist){
 			mapx=xx;
@@ -80,24 +82,34 @@ public class KittensGame extends ApplicationAdapter{
 			count = 0.0;
 			attacking=false;
 			drawn=false;
+			hitbox=new Rectangle(0,0,0,0);
+		}
+		public void collide(SideEnemy enemy){
+			if (hitbox.overlaps(enemy.getHitbox())){
+				System.out.println("hit");
+			}
 		}
 		public void idleDraw(){
 			if (mode.equals("map")){
 				batch.draw(mapFrames[mapCurAction][curFrame],mapx,mapy);
+				hitbox.set(mapx,mapy,mapFrames[mapCurAction][curFrame].getWidth(),mapFrames[mapCurAction][curFrame].getHeight());
 			}
 			if (mode.equals("side")){
 				batch.draw(sideIdleFrames[sideCurAction][curFrame],sidex,sidey);
+				hitbox.set(sidex,sidey,sideIdleFrames[sideCurAction][curFrame].getWidth(),sideIdleFrames[sideCurAction][curFrame].getHeight());
 			}
 		}
 		public void draw(){
 			if (drawn){
 				if (mode.equals("map")){
 					batch.draw(mapFrames[mapCurAction][curFrame],mapx,mapy);
+					hitbox.set(mapx,mapy,mapFrames[mapCurAction][curFrame].getWidth(),mapFrames[mapCurAction][curFrame].getHeight());
 				}
 				//System.out.println(curFrame);
 				//System.out.println(mapCurAction);
 				if (mode.equals("side")){
 					batch.draw(sideFrames[sideCurAction][curFrame],sidex,sidey);
+					hitbox.set(sidex,sidey,sideFrames[sideCurAction][curFrame].getWidth(),sideFrames[sideCurAction][curFrame].getHeight());
 				}
 			}
 			else{
@@ -200,12 +212,14 @@ public class KittensGame extends ApplicationAdapter{
 		public int getMapY(){return mapy;}
 		public int getSideX(){return sidex;}
 		public int getSideY(){return sidey;}
+		public Rectangle getHitbox(){return hitbox;}
 	}
 	class SideEnemy{
 		private int x,y,health,curFrame,curAction,speed;
 		private double count;
 		private Texture[][]frames;
 		private boolean alive;
+		private Rectangle hitbox;
 		private SideEnemy(int xx,int yy,Texture[][]framelist, int spd){
 			x=xx;
 			y=yy;
@@ -216,6 +230,7 @@ public class KittensGame extends ApplicationAdapter{
 			count = 0.0;
 			alive=true;
 			speed=spd;
+			hitbox=new Rectangle(0,0,0,0);
 		}
 		public void move(){
 			if (alive && mode.equals("side")){
@@ -238,10 +253,12 @@ public class KittensGame extends ApplicationAdapter{
 		public void draw(){
 			if (mode.equals("side")){
 				batch.draw(frames[curAction][curFrame],x,y);
+				hitbox.set(x,y,frames[curAction][curFrame].getWidth(),frames[curAction][curFrame].getHeight());
 			}	
 		}
 		public int getX(){return x;}
 		public int getY(){return y;}
+		public Rectangle getHitbox(){return hitbox;}
 	}
 	public boolean checkClear(int x,int y){
 		if(x<0 || x>= forestMap.getWidth() || y<0 || y>= forestMap.getHeight()){
@@ -302,7 +319,7 @@ public class KittensGame extends ApplicationAdapter{
 		}*/
 		forestBG = new Texture("Forest1.png");
 		kat=new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
-		enemy=new SideEnemy(10,170,sideIdleFrames,5);
+		enemy=new SideEnemy(10,170,sideIdleFrames,3);
 	}
 	private void updateCamera(){
 		if (mode.equals("map")){
@@ -321,13 +338,14 @@ public class KittensGame extends ApplicationAdapter{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		modeShift();
 		updateCamera();
+		kat.move();
+		enemy.move();
 		batch.begin();
 		drawBack();
-		kat.move();
 		kat.draw();
 		kat.attackAndDraw();
-		enemy.move();
 		enemy.draw();
 		batch.end();
+		kat.collide(enemy);
 	}
 }
