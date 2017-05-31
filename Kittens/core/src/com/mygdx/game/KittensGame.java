@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
@@ -33,6 +34,7 @@ public class KittensGame extends ApplicationAdapter{
 	Texture forestBG;
 	boolean jumped=false;
 	boolean wUp=false;
+	//170 y is ground for now
 	public void modeShift(){
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE)){
 			mode=mode.equals("map")?"side":"map";
@@ -86,7 +88,7 @@ public class KittensGame extends ApplicationAdapter{
 		}
 		public void collide(SideEnemy enemy){
 			if (hitbox.overlaps(enemy.getHitbox())){
-				System.out.println("hit");
+				//System.out.println("hit");
 			}
 		}
 		public void idleDraw(){
@@ -269,6 +271,8 @@ public class KittensGame extends ApplicationAdapter{
 	}
 	@Override
 	public void create () {
+		DisplayMode dm=Gdx.graphics.getDesktopDisplayMode();
+		////INSRERT LINE HEAR ABOUT DISPLAY
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		forestWall = cNum(0,0,255,255);
@@ -326,7 +330,14 @@ public class KittensGame extends ApplicationAdapter{
 			camera.position.set(kat.getMapX()+140/2,kat.getMapY()+120/2,0);
 		}
 		if (mode.equals("side")){
-			camera.position.set(kat.getSideX(),kat.getSideY()+170,0);
+			if(kat.getSideX()>Gdx.graphics.getWidth()/2){
+				camera.position.set(kat.getSideX(),kat.getSideY()+170,0);
+			}
+			else{
+				camera.position.set(Gdx.graphics.getWidth()/2,kat.getSideY()+170,0);
+			}
+			//System.out.println(kat.getSideX());
+			//System.out.println(kat.getSideY());
 		}
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
