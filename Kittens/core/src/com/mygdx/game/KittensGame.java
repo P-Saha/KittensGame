@@ -36,7 +36,7 @@ public class KittensGame extends ApplicationAdapter{
 	boolean wUp=false;
 	//170 y is ground for now
 	public void modeShift(){
-		if(Gdx.input.isKeyJustPressed(Keys.SPACE)){
+		if(Gdx.input.isKeyJustPressed(Keys.X)){
 			mode=mode.equals("map")?"side":"map";
 		}
 	}
@@ -119,7 +119,7 @@ public class KittensGame extends ApplicationAdapter{
 			}
 		}
 		public void attackAndDraw(){
-			if(Gdx.input.isKeyPressed(Keys.X) || attacking){
+			if(Gdx.input.isKeyPressed(Keys.SPACE) || attacking){
 				if (mode.equals("side")){
 					attacking=true;
 					batch.draw(sideFrames[sideCurAction+2][curAtkFrame],mapx,mapy);
@@ -272,7 +272,7 @@ public class KittensGame extends ApplicationAdapter{
 	@Override
 	public void create () {
 		DisplayMode dm=Gdx.graphics.getDesktopDisplayMode();
-		////INSRERT LINE HEAR ABOUT DISPLAY
+		Gdx.graphics.setDisplayMode(dm.width,dm.height,false);
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		forestWall = cNum(0,0,255,255);
@@ -326,19 +326,14 @@ public class KittensGame extends ApplicationAdapter{
 		enemy=new SideEnemy(10,170,sideIdleFrames,3);
 	}
 	private void updateCamera(){
+		float camX=Math.max(Gdx.graphics.getWidth()/2+6, Math.min(forestBG.getWidth()-Gdx.graphics.getWidth()/2-6, kat.getSideX()));
+		float camY=Math.max(Gdx.graphics.getHeight()/2-20, Math.min(forestBG.getHeight()-Gdx.graphics.getHeight()/2-20, kat.getSideY()));
 		if (mode.equals("map")){
-			camera.position.set(kat.getMapX()+140/2,kat.getMapY()+120/2,0);
+			camX=Math.max(Gdx.graphics.getWidth()/2+6, Math.min(forestBG.getWidth()-Gdx.graphics.getWidth()/2-6, kat.getMapX()));
+			camY=Math.max(Gdx.graphics.getHeight()/2-20, Math.min(forestBG.getHeight()-Gdx.graphics.getHeight()/2-20, kat.getMapY()));
 		}
-		if (mode.equals("side")){
-			if(kat.getSideX()>Gdx.graphics.getWidth()/2){
-				camera.position.set(kat.getSideX(),kat.getSideY()+170,0);
-			}
-			else{
-				camera.position.set(Gdx.graphics.getWidth()/2,kat.getSideY()+170,0);
-			}
-			//System.out.println(kat.getSideX());
-			//System.out.println(kat.getSideY());
-		}
+		//jan helped me here
+		camera.position.set(camX,camY,0);
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
 	}
