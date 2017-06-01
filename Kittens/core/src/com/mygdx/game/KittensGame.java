@@ -32,6 +32,7 @@ public class KittensGame extends ApplicationAdapter{
 	Pixmap forestMap;
 	int forestWall;
 	Texture forestBG;
+	Texture bulletPic;
 	boolean jumped=false;
 	boolean wUp=false;
 	//170 y is ground for now
@@ -127,13 +128,14 @@ public class KittensGame extends ApplicationAdapter{
 			}
 		}
 		public void attackAndDraw(){
-			if(Gdx.input.isKeyPressed(Keys.SPACE) || attacking){
+			if(Gdx.input.isKeyPressed(Keys.SPACE)||attacking){
 				if (mode.equals("side")){
-					attacking=true;
-					batch.draw(sideFrames[sideCurAction+2][curAtkFrame],mapx,mapy);
 					curAtkFrame++;
-					if (curAtkFrame==2 /*and collides with enemy*/){////////////////////////////////////////
-						//deal damage//////////////////////////////////////////////////
+					attacking=true;
+					//batch.draw(sideFrames[sideCurAction+2][curAtkFrame],mapx,mapy);
+					if (curAtkFrame==2){
+						Bullet katBullet = new Bullet(sidex,sidey,bulletPic,jumpDirect);
+						bullets.add(katBullet);
 					}
 					if (curAtkFrame>5){///////////////////////////////////////////////////////
 						attacking=false;
@@ -197,6 +199,15 @@ public class KittensGame extends ApplicationAdapter{
 					}
 					
 				}
+				if(Gdx.input.isKeyPressed(Keys.S)||Gdx.input.isKeyPressed(Keys.DOWN)){
+					if (mode.equals("map")){
+						if(mapy<1000){
+							mapy-=10;
+						}
+						mapCurAction=DOWN;
+						drawn=true;
+					}
+				}
 				if (mode.equals("side")){
 					vy-=1;
 					if(170<sidey+vy){
@@ -210,15 +221,13 @@ public class KittensGame extends ApplicationAdapter{
 				}
 				//System.out.println(vy);
 				//System.out.println(sidey);
-				if(Gdx.input.isKeyPressed(Keys.S)||Gdx.input.isKeyPressed(Keys.DOWN)){
-					if (mode.equals("map")){
-						if(mapy<1000){
-							mapy-=10;
-						}
-						mapCurAction=DOWN;
-						drawn=true;
+				/*if(Gdx.input.isKeyPressed(Keys.SPACE)){
+					if(mode.equals("side")){
+						Bullet katBullet = new Bullet(sidex,sidey,bulletPic,jumpDirect);
+						bullets.add(katBullet);
+						curAtkFrame++;
 					}
-				}
+				}*/
 				count += .0625;
 				curFrame=(int)(count)%7;
 			}
@@ -282,6 +291,48 @@ public class KittensGame extends ApplicationAdapter{
 		int c = forestMap.getPixel(x, forestMap.getHeight()- y);
 		return c != forestWall;
 	}
+	public void moveBullet(){
+		batch.begin();
+		if (bullets.size()>0){
+			for (int i=0;i<bullets.size();i++){
+				Bullet bull = bullets.get(i);
+				System.out.println(bulletPic);
+				batch.draw(bulletPic,bull.bx,bull.by);
+				if (bull.getBullDirect()==LEFT){
+					bull.bulletLeft();
+					if (bull.bx<=0){
+						bullets.remove(bull);
+					}
+				}
+				else if (bull.getBullDirect()==RIGHT){
+					bull.bulletRight();
+					if (bull.bx>=1456){
+						bullets.remove(bull);
+					}
+				}
+			}
+		}
+		batch.end();
+	}
+	class Bullet{
+		int bx,by,direct;
+		Texture bulletPic;
+		public Bullet (int kx, int ky,Texture bulletPic,int direction){
+			bx = kx;
+			by = ky;
+			this.bulletPic = bulletPic;
+			direct = direction;
+		}
+		public void bulletLeft(){
+			bx-=5;
+		}
+		public void bulletRight(){
+			bx+=5;
+		}
+		public int getBullDirect(){
+			return direct;
+		}
+	}
 	@Override
 	public void create () {
 		DisplayMode dm=Gdx.graphics.getDesktopDisplayMode();
@@ -337,6 +388,7 @@ public class KittensGame extends ApplicationAdapter{
 			}
 		}*/
 		forestBG = new Texture("Forest1.png");
+		bulletPic=new Texture("Bullet.png");
 		kat=new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
 		enemy=new SideEnemy(10,170,sideIdleFrames,3);
 	}
@@ -367,6 +419,7 @@ public class KittensGame extends ApplicationAdapter{
 		kat.attackAndDraw();
 		enemy.draw();
 		batch.end();
+		moveBullet();
 		kat.collide(enemy);
 	}
 }
