@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -20,6 +19,7 @@ import java.util.*;
 public class KittensGame extends ApplicationAdapter{
 	SpriteBatch batch;
 	Music bgMusic;
+	private ArrayList<Bullet>bullets = new ArrayList<Bullet>();
 	public static final int LEFT=0;
 	public static final int RIGHT=1;
 	public static final int UP=2;
@@ -52,12 +52,12 @@ public class KittensGame extends ApplicationAdapter{
 		return (r<<24) + (g<<16) + (b<<8) + a;
 	}
 	class Kitten{
-		private int mapx,mapy,sidex,sidey,vy,health,mapCurAction,sideCurAction;
+		private int mapx,mapy,sidex,sidey,vy,health,mapCurAction,sideCurAction,oldCurAction,jumpDirect;
 		private boolean alive,attacking,drawn;
 		private Texture [][] mapFrames= new Texture[4][7];
 		//Left,Right,Up,Down
 		//Animation frames
-		private Texture [][] sideFrames= new Texture[7][7]; 
+		private Texture [][] sideFrames= new Texture[4][7]; 
 		//RunLeft,RunRight,AtkLeft,AtkRight,JumpLeft,JumpRight,ult, I HATE JUMPING
 		//Animation frames
 		private Texture [][] sideIdleFrames=new Texture[2][7];
@@ -81,6 +81,7 @@ public class KittensGame extends ApplicationAdapter{
 			curAtkFrame=0;
 			mapCurAction=0;
 			sideCurAction=0;
+			jumpDirect=1;
 			count = 0.0;
 			attacking=false;
 			drawn=false;
@@ -97,8 +98,15 @@ public class KittensGame extends ApplicationAdapter{
 				hitbox.set(mapx,mapy,mapFrames[mapCurAction][curFrame].getWidth(),mapFrames[mapCurAction][curFrame].getHeight());
 			}
 			if (mode.equals("side")){
-				batch.draw(sideIdleFrames[sideCurAction][curFrame],sidex,sidey);
-				hitbox.set(sidex,sidey,sideIdleFrames[sideCurAction][curFrame].getWidth(),sideIdleFrames[sideCurAction][curFrame].getHeight());
+				if (sideCurAction<2){
+					batch.draw(sideIdleFrames[sideCurAction][curFrame],sidex,sidey);
+					hitbox.set(sidex,sidey,sideIdleFrames[sideCurAction][curFrame].getWidth(),sideIdleFrames[sideCurAction][curFrame].getHeight());
+				}
+				else{
+					batch.draw(sideFrames[sideCurAction][curFrame],sidex,sidey);
+					hitbox.set(sidex,sidey,sideFrames[sideCurAction][curFrame].getWidth(),sideFrames[sideCurAction][curFrame].getHeight());
+				}
+				sideCurAction=oldCurAction;
 			}
 		}
 		public void draw(){
@@ -124,7 +132,7 @@ public class KittensGame extends ApplicationAdapter{
 					attacking=true;
 					batch.draw(sideFrames[sideCurAction+2][curAtkFrame],mapx,mapy);
 					curAtkFrame++;
-					if (curAtkFrame>2 /*and collides with enemy*/){////////////////////////////////////////
+					if (curAtkFrame==2 /*and collides with enemy*/){////////////////////////////////////////
 						//deal damage//////////////////////////////////////////////////
 					}
 					if (curAtkFrame>5){///////////////////////////////////////////////////////
@@ -150,6 +158,8 @@ public class KittensGame extends ApplicationAdapter{
 							sidex-=10;
 						}
 						sideCurAction=LEFT;
+						oldCurAction=LEFT;
+						jumpDirect=0;
 						drawn=true;
 					}
 				}
@@ -166,6 +176,8 @@ public class KittensGame extends ApplicationAdapter{
 							sidex+=10;
 						}
 						sideCurAction=RIGHT;
+						oldCurAction=RIGHT;
+						jumpDirect=1;
 						drawn=true;
 					}
 				}
@@ -189,6 +201,7 @@ public class KittensGame extends ApplicationAdapter{
 					vy-=1;
 					if(170<sidey+vy){
 						sidey+=vy;
+						sideCurAction=UP+jumpDirect;
 					}
 					else{
 						sidey=170;
@@ -293,12 +306,14 @@ public class KittensGame extends ApplicationAdapter{
 			sideIdleFrames[i/7][i%7+1]=new Texture("sideFrames1-"+(i+1)+".png");
 		} 
 		*/ 
-		for(int i=0;i<14;i++){
-			sideIdleFrames[i/7][i%7]=new Texture("sideFrames1-"+(i+1)+".png");
+		for(int i=0;i<7;i++){
+			sideIdleFrames[0][i]=new Texture("sideFrames1-"+(i+1)+".png");
+			sideIdleFrames[1][i]=new Texture("sideFrames1-"+(i+8)+".png");
 		}
 		for(int i=0;i<2;i++){
 			for(int j=0;j<7;j++){
 				sideFrames[i][j]=new Texture("sideFrames"+(i+2)+"-"+(j+1)+".png");
+				sideFrames[i+2][j]=new Texture("sideFrames"+(i+7)+"-"+(j+1)+".png");
 			}
 		}
 		for(int i=0;i<4;i++){
