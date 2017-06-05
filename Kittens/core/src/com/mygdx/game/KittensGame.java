@@ -40,10 +40,15 @@ public class KittensGame extends ApplicationAdapter{
 		if(Gdx.input.isKeyJustPressed(Keys.X)){
 			mode=mode.equals("map")?"side":"map";
 		}
+		//if (mode.equals("map")){
+			//for(Level level:levelist){
+				
+			//}
+		//}
 	}
 	public void drawBack(){
 		if (mode.equals("map")){
-			//////////////batch.draw(,kat.getMapX(),kat.getMapY());
+			batch.draw(forestBG,0,0);
 		}
 		if (mode.equals("side")){
 			batch.draw(forestBG,0,0);
@@ -282,6 +287,7 @@ public class KittensGame extends ApplicationAdapter{
 		}
 		public int getX(){return x;}
 		public int getY(){return y;}
+		public boolean isAlive(){return alive;}
 		public Rectangle getHitbox(){return hitbox;}
 	}
 	public boolean checkClear(int x,int y){
@@ -293,26 +299,51 @@ public class KittensGame extends ApplicationAdapter{
 	}
 	public void moveBullet(){
 		batch.begin();
-		if (bullets.size()>0){
-			for (int i=0;i<bullets.size();i++){
-				Bullet bull = bullets.get(i);
-				System.out.println(bulletPic);
-				batch.draw(bulletPic,bull.bx,bull.by);
-				if (bull.getBullDirect()==LEFT){
-					bull.bulletLeft();
-					if (bull.bx<=0){
-						bullets.remove(bull);
+		if (mode.equals("side")){
+			if (bullets.size()>0){
+				for (int i=0;i<bullets.size();i++){
+					Bullet bull = bullets.get(i);
+					batch.draw(bulletPic,bull.bx,bull.by);
+					if (bull.getBullDirect()==LEFT){
+						bull.bulletLeft();
+						if (bull.bx<=0){
+							bullets.remove(bull);
+						}
 					}
-				}
-				else if (bull.getBullDirect()==RIGHT){
-					bull.bulletRight();
-					if (bull.bx>=1456){
-						bullets.remove(bull);
+					else if (bull.getBullDirect()==RIGHT){
+						bull.bulletRight();
+						if (bull.bx>=1456){
+							bullets.remove(bull);
+						}
 					}
 				}
 			}
 		}
 		batch.end();
+	}
+	class level{
+		SideEnemy [] enemies;
+		Texture background;
+		boolean completed;
+		int x,y;
+		public level(SideEnemy[] enemylist, Texture backgroundpic, int xx, int yy){
+			enemies=enemylist;
+			background=backgroundpic;
+			completed=false;
+			x=xx;
+			y=yy;
+		}
+		public boolean genocideCheck(){
+			for (SideEnemy enemy:enemies){
+				if (enemy.isAlive()==true){
+					return false;
+				}
+			}
+			return true;
+		}
+		public SideEnemy[] getEnemies(){return enemies;}
+		public Texture getBackground(){return background;}
+		public boolean isCompleted(){return completed;}
 	}
 	class Bullet{
 		int bx,by,direct;
@@ -394,10 +425,10 @@ public class KittensGame extends ApplicationAdapter{
 	}
 	private void updateCamera(){
 		float camX=Math.max(Gdx.graphics.getWidth()/2+6, Math.min(forestBG.getWidth()-Gdx.graphics.getWidth()/2-6, kat.getSideX()));
-		float camY=Math.max(Gdx.graphics.getHeight()/2-20, Math.min(forestBG.getHeight()-Gdx.graphics.getHeight()/2-20, kat.getSideY()));
+		float camY=Math.max(Gdx.graphics.getHeight()/2+32, Math.min(forestBG.getHeight()-Gdx.graphics.getHeight()/2-20, kat.getSideY()));
 		if (mode.equals("map")){
 			camX=Math.max(Gdx.graphics.getWidth()/2+6, Math.min(forestBG.getWidth()-Gdx.graphics.getWidth()/2-6, kat.getMapX()));
-			camY=Math.max(Gdx.graphics.getHeight()/2-20, Math.min(forestBG.getHeight()-Gdx.graphics.getHeight()/2-20, kat.getMapY()));
+			camY=Math.max(Gdx.graphics.getHeight()/2+32, Math.min(forestBG.getHeight()-Gdx.graphics.getHeight()/2-32, kat.getMapY()));
 		}
 		//jan helped me here
 		camera.position.set(camX,camY,0);
