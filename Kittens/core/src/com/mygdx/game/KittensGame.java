@@ -29,10 +29,11 @@ public class KittensGame extends ApplicationAdapter{
 	int jumpAt=15;
 	private Kitten kat;
 	private SideEnemy enemy;
+	Level curLevel;
+	Level [] levelist;
 	Pixmap forestMap;
 	int forestWall;
-	Texture forestBG;
-	Texture bulletPic;
+	Texture forestBG,bulletPic;
 	boolean jumped=false;
 	boolean wUp=false;
 	//170 y is ground for now
@@ -40,11 +41,20 @@ public class KittensGame extends ApplicationAdapter{
 		if(Gdx.input.isKeyJustPressed(Keys.X)){
 			mode=mode.equals("map")?"side":"map";
 		}
-		//if (mode.equals("map")){
-			//for(Level level:levelist){
-				
-			//}
-		//}
+		if (mode.equals("map")){
+			for(Level level:levelist){
+				if(kat.getHitbox().overlaps(level.getHitbox()) && !level.isCompleted()){
+					curLevel=level;
+					mode="side";
+				}
+			}
+		}
+		if (mode.equals("side")){
+			if(kat.getSideX()>curLevel.getMaxX()||curLevel.genocideCheck()){
+				curLevel.setCompleted(true);
+				mode="map";
+			}
+		}
 	}
 	public void drawBack(){
 		if (mode.equals("map")){
@@ -95,7 +105,6 @@ public class KittensGame extends ApplicationAdapter{
 		}
 		public void collide(SideEnemy enemy){
 			if (hitbox.overlaps(enemy.getHitbox())){
-				//System.out.println("hit");
 			}
 		}
 		public void idleDraw(){
@@ -193,7 +202,7 @@ public class KittensGame extends ApplicationAdapter{
 						if(mapy<1024-200){
 							mapy+=10;
 						}
-						mapCurAction=UP;
+						//mapCurAction=UP;
 						drawn=true;
 					}
 					if (mode.equals("side")){
@@ -209,7 +218,7 @@ public class KittensGame extends ApplicationAdapter{
 						if(mapy<1000){
 							mapy-=10;
 						}
-						mapCurAction=DOWN;
+						//mapCurAction=DOWN;
 						drawn=true;
 					}
 				}
@@ -321,17 +330,20 @@ public class KittensGame extends ApplicationAdapter{
 		}
 		batch.end();
 	}
-	class level{
-		SideEnemy [] enemies;
-		Texture background;
-		boolean completed;
-		int x,y;
-		public level(SideEnemy[] enemylist, Texture backgroundpic, int xx, int yy){
+	class Level{
+		private SideEnemy [] enemies;
+		private Texture background,icon;
+		private boolean completed;
+		private int x,y,maxX;
+		private Rectangle hitbox;
+		public Level(SideEnemy[] enemylist, Texture backgroundpic, int xx, int yy){
 			enemies=enemylist;
 			background=backgroundpic;
 			completed=false;
 			x=xx;
 			y=yy;
+			hitbox=new Rectangle(xx,yy,icon.getWidth(),icon.getHeight());
+			maxX=background.getWidth()-16;
 		}
 		public boolean genocideCheck(){
 			for (SideEnemy enemy:enemies){
@@ -344,6 +356,10 @@ public class KittensGame extends ApplicationAdapter{
 		public SideEnemy[] getEnemies(){return enemies;}
 		public Texture getBackground(){return background;}
 		public boolean isCompleted(){return completed;}
+		public void setCompleted(boolean val){completed=val;}
+		public Rectangle getHitbox(){return hitbox;}
+		public int getMaxX(){return maxX;}
+		
 	}
 	class Bullet{
 		int bx,by,direct;
