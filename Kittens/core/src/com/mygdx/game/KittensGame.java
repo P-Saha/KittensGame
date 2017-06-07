@@ -31,6 +31,7 @@ public class KittensGame extends ApplicationAdapter{
 	private SideEnemy enemy;
 	Level curLevel;
 	Level [] levelist;
+	Level town;
 	Pixmap forestMap;
 	int forestWall;
 	Texture forestBG,bulletPic;
@@ -47,6 +48,10 @@ public class KittensGame extends ApplicationAdapter{
 					curLevel=level;
 					mode="side";
 				}
+			}
+			if(kat.getHitbox().overlaps(town.getHitbox())){
+				curLevel=town;
+				mode="side";
 			}
 		}
 		if (mode.equals("side")){
