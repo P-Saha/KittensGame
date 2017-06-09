@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -19,6 +20,7 @@ import java.util.*;
 public class KittensGame extends ApplicationAdapter{
 	SpriteBatch batch;
 	Music bgMusic;
+	BitmapFont font;
 	private ArrayList<Bullet>bullets = new ArrayList<Bullet>();
 	public static final int LEFT=0;
 	public static final int RIGHT=1;
@@ -389,6 +391,7 @@ public class KittensGame extends ApplicationAdapter{
 	public void create () {
 		DisplayMode dm=Gdx.graphics.getDesktopDisplayMode();
 		Gdx.graphics.setDisplayMode(dm.width,dm.height,false);
+		font = new BitmapFont(Gdx.files.internal("font.fnt"));
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		forestWall = cNum(0,0,255,255);
