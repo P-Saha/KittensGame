@@ -51,10 +51,10 @@ public class KittensGame extends ApplicationAdapter{
 					mode="side";
 				}
 			}
-			if(kat.getHitbox().overlaps(town.getHitbox())){
+			/*if(kat.getHitbox().overlaps(town.getHitbox())){
 				curLevel=town;
 				mode="side";
-			}
+			}*/
 		}
 		if (mode.equals("side")){
 			if(kat.getSideX()>curLevel.getMaxX()||curLevel.genocideCheck()){
@@ -343,12 +343,13 @@ public class KittensGame extends ApplicationAdapter{
 		private boolean completed;
 		private int x,y,maxX;
 		private Rectangle hitbox;
-		public Level(SideEnemy[] enemylist, Texture backgroundpic, int xx, int yy){
-			enemies=enemylist;
+		public Level(SideEnemy[] enemylist, Texture backgroundpic, Texture iconpic, int xx, int yy){
+			enemies=enemylist;;
 			background=backgroundpic;
 			completed=false;
 			x=xx;
 			y=yy;
+			icon=iconpic;
 			hitbox=new Rectangle(xx,yy,icon.getWidth(),icon.getHeight());
 			maxX=background.getWidth()-16;
 		}
@@ -359,6 +360,11 @@ public class KittensGame extends ApplicationAdapter{
 				}
 			}
 			return true;
+		}
+		public void drawIcon(){
+			if (mode.equals("map")){
+				batch.draw(icon,x,y);
+			}
 		}
 		public SideEnemy[] getEnemies(){return enemies;}
 		public Texture getBackground(){return background;}
@@ -395,6 +401,7 @@ public class KittensGame extends ApplicationAdapter{
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		forestWall = cNum(0,0,255,255);
+		levelist=new Level[4];
 		Texture[][]mapFrames=new Texture[4][7];
 		Texture[][]sideFrames=new Texture[7][7];
 		Texture[][]sideIdleFrames=new Texture[2][7];
@@ -446,6 +453,14 @@ public class KittensGame extends ApplicationAdapter{
 		bulletPic=new Texture("Bullet.png");
 		kat=new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
 		enemy=new SideEnemy(10,170,sideIdleFrames,3);
+		SideEnemy[] testEnemyList=new SideEnemy[1];
+		testEnemyList[0]=enemy;
+		Level Forest= new Level (testEnemyList,forestBG, mapFrames[0][0],500, 500);
+		curLevel=Forest;
+		levelist[0]=Forest;
+		levelist[1]=Forest;
+		levelist[2]=Forest;
+		levelist[3]=Forest;
 	}
 	private void updateCamera(){
 		float camX=Math.max(Gdx.graphics.getWidth()/2+6, Math.min(forestBG.getWidth()-Gdx.graphics.getWidth()/2-6, kat.getSideX()));
@@ -467,12 +482,20 @@ public class KittensGame extends ApplicationAdapter{
 		modeShift();
 		updateCamera();
 		kat.move();
-		enemy.move();
+		for (SideEnemy enemy:curLevel.getEnemies()){
+			enemy.move();
+		}
+		//enemy.move();
 		batch.begin();
 		drawBack();
 		kat.draw();
 		kat.attackAndDraw();
-		enemy.draw();
+		for (SideEnemy enemy:curLevel.getEnemies()){
+			enemy.draw();
+		}
+		for (Level level:levelist){
+			level.drawIcon();
+		}
 		batch.end();
 		moveBullet();
 		kat.collide(enemy);
