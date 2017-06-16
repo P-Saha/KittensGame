@@ -321,7 +321,7 @@ public class KittensGame extends ApplicationAdapter{
 						speed=8;
 					}
 					else{
-						speed=1;
+						speed=0;
 					}
 				}
 				
@@ -342,7 +342,7 @@ public class KittensGame extends ApplicationAdapter{
 				else if(curAction==RIGHT && (kat.getSideCurAction()==RIGHT /*|| kat.getSideCurAction()==RIGHT+2*/)){
 					x+=speed;
 				}
-				if(curAction==LEFT && (kat.getSideCurAction()==LEFT /*|| kat.getSideCurAction()==LEFT+2*/)){
+				else if(curAction==LEFT && (kat.getSideCurAction()==LEFT /*|| kat.getSideCurAction()==LEFT+2*/)){
 					x-=speed;
 				}
 				count += .0625;
@@ -604,7 +604,7 @@ public class KittensGame extends ApplicationAdapter{
 		mainMenu= new Texture("menu.jpg");
 		bulletPic=new Texture("Bullet.png");
 		kat=new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
-		enemy=new SideEnemy("beetle",1500,170,sideIdleFrames,6);
+		enemy=new SideEnemy("elephant",1500,170,sideIdleFrames,6);
 		page = new Pages(0,pages);
 		//main menu = 0
 		SideEnemy[] testEnemyList=new SideEnemy[1];
