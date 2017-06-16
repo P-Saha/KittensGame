@@ -300,7 +300,9 @@ public class KittensGame extends ApplicationAdapter{
 		private Texture[][]frames;
 		private boolean alive,attacking,topClear=true,inBound=false;
 		private Rectangle hitbox;
-		private SideEnemy(int xx,int yy,Texture[][]framelist, int spd){
+		private String type;
+		private SideEnemy(String typ, int xx,int yy,Texture[][]framelist, int spd){
+			type=typ;
 			x=xx;
 			y=yy;
 			health=10;
@@ -314,16 +316,33 @@ public class KittensGame extends ApplicationAdapter{
 		}
 		public void move(){
 			if (alive && mode.equals("side")){
+				if (type.equals("elephant")){
+					if(count%10<4){
+						speed=8;
+					}
+					else{
+						speed=1;
+					}
+				}
+				
 				if(kat.getSideX()<x){
 					curAction=LEFT;
 				}
 				else{
 					curAction=RIGHT;
 				}
-				if(curAction==RIGHT){
+				if(!type.equals("beetle")){
+					if(curAction==RIGHT){
+						x+=speed;
+					}
+					if(curAction==LEFT){
+						x-=speed;
+					}
+				}
+				else if(curAction==RIGHT && (kat.getSideCurAction()==RIGHT /*|| kat.getSideCurAction()==RIGHT+2*/)){
 					x+=speed;
 				}
-				if(curAction==LEFT){
+				if(curAction==LEFT && (kat.getSideCurAction()==LEFT /*|| kat.getSideCurAction()==LEFT+2*/)){
 					x-=speed;
 				}
 				count += .0625;
@@ -352,7 +371,7 @@ public class KittensGame extends ApplicationAdapter{
 			}
 			return inBound;
 		}
-		public void attack(){
+		public void attack(){//With bullets
 			if (mode.equals("side")){
 				checkAbove();
 				if ((int)count%5==0){
@@ -371,17 +390,19 @@ public class KittensGame extends ApplicationAdapter{
 				}
 			}
 		}
-		public void smartAttack(){
-			if (mode.equals("side")){
-				checkAbove();
-				if (checkBoundary(250)==true){
-					attacking = true;
-					attack();
+		public void smartAttack(){//With bullets
+			if(type.equals("king")){
+				if (mode.equals("side")){
+					checkAbove();
+					if (checkBoundary(250)==true){
+						attacking = true;
+						attack();
+					}
+					else{
+						attacking=false;
+					}
+				//System.out.println(inBound);
 				}
-				else{
-					attacking=false;
-				}
-			//System.out.println(inBound);
 			}
 		}
 		public void draw(){
@@ -583,7 +604,7 @@ public class KittensGame extends ApplicationAdapter{
 		mainMenu= new Texture("menu.jpg");
 		bulletPic=new Texture("Bullet.png");
 		kat=new Kitten(10,170,mapFrames,sideFrames,sideIdleFrames);
-		enemy=new SideEnemy(1500,170,sideIdleFrames,3);
+		enemy=new SideEnemy("beetle",1500,170,sideIdleFrames,6);
 		page = new Pages(0,pages);
 		//main menu = 0
 		SideEnemy[] testEnemyList=new SideEnemy[1];
@@ -618,12 +639,14 @@ public class KittensGame extends ApplicationAdapter{
 			kat.move();
 			for (SideEnemy enemy:curLevel.getEnemies()){
 				enemy.move();
+				enemy.smartAttack();
+				moveBullet();
+				kat.collide(enemy);
 			}
-			//enemy.move();
 			batch.begin();
 			drawBack();
 			kat.draw();
-			kat.attackAndDraw();
+			kat.attackAndDraw();			
 			for (SideEnemy enemy:curLevel.getEnemies()){
 				enemy.draw();
 			}
@@ -633,9 +656,7 @@ public class KittensGame extends ApplicationAdapter{
 			}
 			batch.end();
 			//enemy.attack();
-			enemy.smartAttack();
-			moveBullet();
-			kat.collide(enemy);
+			
 		}
 		else{
 			batch.begin();
